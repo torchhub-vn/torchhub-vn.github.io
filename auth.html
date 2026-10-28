@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đăng nhập Torch Hub</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Lexend:wght@400;600&family=Titan+One&display=swap">
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f3cdb9; color: #4a2a22; font-family: Lexend, system-ui, sans-serif; padding: 24px; box-sizing: border-box; }
+  .card { background: #fffaf7; border-radius: 28px; padding: 32px; max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 14px; text-align: center; }
+  .logo { font-family: "Titan One", sans-serif; color: #c4553a; font-size: 30px; line-height: .9; }
+  h1 { margin: 0; font-family: "Bricolage Grotesque", sans-serif; font-size: 26px; color: #8a3220; }
+  p { margin: 0; color: #74544a; font-size: 14px; }
+  button, a.btn { font: inherit; font-weight: 600; border: 0; border-radius: 999px; padding: 12px 18px; background: #c4553a; color: #fff; cursor: pointer; text-decoration: none; }
+  button:hover, a.btn:hover { background: #b04a31; }
+  .err { color: #9a3d27; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Torch<br>Hub</div>
+  <h1 id="title">Đăng nhập Torch Hub</h1>
+  <p id="desc">Đang chuẩn bị…</p>
+  <button id="btn" hidden>Đăng nhập bằng Google</button>
+  <a id="back" class="btn" hidden>Mở lại Torch Hub</a>
+  <div id="err" class="err"></div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script>
+  // Dán đúng firebaseConfig giống trong renderer/config.js của app
+  const firebaseConfig = {
+    apiKey: 'AIzaSyATgXzxF5dEXnN5y2G-8aXeqINXyK_8ojo',
+    authDomain: 'torch-hub.firebaseapp.com',
+    projectId: 'torch-hub',
+    appId: '1:683183658929:web:91a492bd6bdfde8fc60f90',
+  };
+  firebase.initializeApp(firebaseConfig);
+  const $ = id => document.getElementById(id);
+  const mode = new URLSearchParams(location.search).get('mode');
+  const backTo = url => {
+    $('back').href = url; $('back').hidden = false;
+    $('desc').textContent = 'Trình duyệt sẽ hỏi “Mở Torch Hub?”. Bấm Mở / Allow. Nếu không thấy, bấm nút bên dưới.';
+    location.href = url;
+  };
+
+  if (mode === 'google') {
+    $('desc').textContent = 'Bấm nút để chọn tài khoản Google. Xong bước này bạn sẽ quay lại app.';
+    $('btn').hidden = false;
+    $('btn').onclick = async () => {
+      $('err').textContent = '';
+      try {
+        const r = await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        const idToken = r.credential && r.credential.idToken;
+        if (!idToken) throw new Error('Không lấy được thông tin đăng nhập Google.');
+        $('btn').hidden = true; $('title').textContent = 'Đăng nhập thành công';
+        backTo('torchhub://google?id_token=' + encodeURIComponent(idToken));
+      } catch (e) { $('err').textContent = e.message; }
+    };
+  } else if (mode === 'emaillink' || firebase.auth().isSignInWithEmailLink(location.href)) {
+    $('title').textContent = 'Đang mở Torch Hub';
+    backTo('torchhub://emaillink?link=' + encodeURIComponent(location.href));
+  } else {
+    $('desc').textContent = 'Trang này dùng để đăng nhập từ app Torch Hub. Hãy mở app và chọn cách đăng nhập.';
+  }
+</script>
+</body>
+</html>
