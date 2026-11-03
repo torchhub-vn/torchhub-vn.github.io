@@ -661,8 +661,14 @@ document.querySelectorAll("a[data-os]").forEach(function(a){
   var host = location.hostname, user = /\.github\.io$/.test(host) ? host.split('.')[0] : 'TEN_GITHUB';
   var RELEASES = 'https://github.com/' + user + '/' + user + '.github.io/releases/latest/download/';
   var FILES = { 'windows': 'TorchHub-Setup.exe', 'macos': 'TorchHub-mac-arm64.dmg', 'macos-intel': 'TorchHub-mac-x64.dmg' };
-  document.querySelectorAll('[data-os]').forEach(function(a){ var f = FILES[a.getAttribute('data-os')]; if (f) a.href = RELEASES + f; });
+  document.querySelectorAll('[data-os]').forEach(function(a){
+    var os = a.getAttribute('data-os'), f = FILES[os]; if (f) a.href = RELEASES + f;
+    /* Đếm lượt bấm Tải trên GoatCounter (mục Events) */
+    a.addEventListener('click', function(){ if (window.goatcounter && goatcounter.count) goatcounter.count({ path: 'tai-' + os, title: 'Bấm tải ' + os, event: true }); });
+  });
 })();
 </script>
+<!-- Thống kê lượt truy cập: GoatCounter (đổi "torchhub" nếu bạn đăng ký mã khác) -->
+<script data-goatcounter="https://torchhub.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
